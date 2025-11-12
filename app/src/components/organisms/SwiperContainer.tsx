@@ -10,13 +10,15 @@ import { ProfileCard } from "./ProfileCard";
 interface SwiperContainerProps {
   people: People[];
   swiperRef: React.RefObject<SwiperCardRefType>;
-  onSwipeLeft: (cardIndex: number) => void;
-  onSwipeRight: (cardIndex: number) => void;
-  onUndo: () => void;
-  onNope: () => void;
-  onLike: () => void;
-  onSwipedAll: () => void;
+  onSwipeLeft?: (cardIndex: number) => void;
+  onSwipeRight?: (cardIndex: number) => void;
+  onUndo?: () => void;
+  onNope?: () => void;
+  onLike?: () => void;
+  onSwipedAll?: () => void;
   allPeopleInteracted: boolean;
+  readOnly?: boolean;
+  loop?: boolean;
 }
 
 export const SwiperContainer = React.memo(
@@ -30,6 +32,8 @@ export const SwiperContainer = React.memo(
     onLike,
     onSwipedAll,
     allPeopleInteracted,
+    readOnly = false,
+    loop = false,
   }: SwiperContainerProps) {
     const renderCard = useCallback(
       (people: People) => <ProfileCard people={people} />,
@@ -50,7 +54,11 @@ export const SwiperContainer = React.memo(
       return item.id ? `${item.id}-${index}` : `people-${index}`;
     }, []);
 
-    if (allPeopleInteracted) {
+    const noOpSwipeHandler = useCallback(() => {
+      // No-op handler for read-only mode - allows swiping but no actions
+    }, []);
+
+    if (allPeopleInteracted && !loop && people.length === 0) {
       return <EmptyState />;
     }
 
@@ -61,18 +69,25 @@ export const SwiperContainer = React.memo(
           data={people}
           renderCard={renderCard}
           cardStyle={styles.cardStyle}
-          onSwipeLeft={onSwipeLeft}
-          onSwipeRight={onSwipeRight}
-          onSwipedAll={onSwipedAll}
+          onSwipeLeft={readOnly ? noOpSwipeHandler : onSwipeLeft}
+          onSwipeRight={readOnly ? noOpSwipeHandler : onSwipeRight}
+          onSwipedAll={loop ? undefined : onSwipedAll}
           keyExtractor={getPeopleKey}
           disableTopSwipe
           disableBottomSwipe
-          OverlayLabelLeft={renderOverlayLabelLeft}
-          OverlayLabelRight={renderOverlayLabelRight}
+          loop={loop}
+          OverlayLabelLeft={readOnly ? undefined : renderOverlayLabelLeft}
+          OverlayLabelRight={readOnly ? undefined : renderOverlayLabelRight}
         />
-        <View className="absolute bottom-0 left-1/2 -translate-x-1/2">
-          <ActionButtons onUndo={onUndo} onNope={onNope} onLike={onLike} />
-        </View>
+        {!readOnly && (
+          <View className="absolute bottom-0 left-1/2 -translate-x-1/2">
+            <ActionButtons
+              onUndo={onUndo || (() => {})}
+              onNope={onNope || (() => {})}
+              onLike={onLike || (() => {})}
+            />
+          </View>
+        )}
       </View>
     );
   },
@@ -80,6 +95,8 @@ export const SwiperContainer = React.memo(
     return (
       prevProps.allPeopleInteracted === nextProps.allPeopleInteracted &&
       prevProps.people.length === nextProps.people.length &&
+      prevProps.loop === nextProps.loop &&
+      prevProps.readOnly === nextProps.readOnly &&
       prevProps.people.every(
         (person, index) =>
           person.id === nextProps.people[index]?.id &&

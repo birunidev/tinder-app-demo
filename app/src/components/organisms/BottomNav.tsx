@@ -1,24 +1,29 @@
-import React from "react";
-import { Pressable, View } from "react-native";
 import { ChatIcon } from "@/components/icons/ChatIcon";
 import { ExploreIcon } from "@/components/icons/ExploreIcon";
 import { HomeIcon } from "@/components/icons/HomeIcon";
 import { LikesYouIcon } from "@/components/icons/LikesYouIcon";
 import { UserIcon } from "@/components/icons/UserIcon";
+import { router, usePathname } from "expo-router";
+import React from "react";
+import { Pressable, View } from "react-native";
 
 export function BottomNav() {
+  const pathname = usePathname();
+  const isHomeActive = pathname === "/";
+  const isLikedActive = pathname === "/liked";
+
   return (
     <View className="flex-row justify-around items-center bg-white px-4 py-3">
-      <Pressable className="items-center">
-        <HomeIcon size={44} />
+      <Pressable className="items-center" onPress={() => router.push("/")}>
+        <HomeIcon size={44} active={isHomeActive} />
       </Pressable>
 
       <Pressable className="items-center">
         <ExploreIcon size={44} />
       </Pressable>
 
-      <Pressable className="items-center">
-        <LikesYouIcon size={44} badgeCount="99+" />
+      <Pressable className="items-center" onPress={() => router.push("/liked")}>
+        <LikesYouIcon size={44} badgeCount="99+" active={isLikedActive} />
       </Pressable>
 
       <Pressable className="items-center">
@@ -31,4 +36,3 @@ export function BottomNav() {
     </View>
   );
 }
-
