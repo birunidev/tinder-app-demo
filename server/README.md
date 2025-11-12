@@ -86,6 +86,99 @@ A Laravel-based REST API for a Tinder-like dating application. This API provides
     npm run dev
     ```
 
+## Running on Same WiFi Network
+
+To access the API from other devices on the same WiFi network (e.g., mobile devices), you need to run the server on your local IP address instead of `localhost`.
+
+### Find Your Local IP Address
+
+**macOS/Linux:**
+
+```bash
+ifconfig | grep "inet " | grep -v 127.0.0.1
+```
+
+Or:
+
+```bash
+ip addr show | grep "inet " | grep -v 127.0.0.1
+```
+
+**Windows:**
+
+```bash
+ipconfig
+```
+
+Look for "IPv4 Address" under your active network adapter.
+
+### Start Server on Local Network
+
+Run the Laravel server on `0.0.0.0` to accept connections from any network interface:
+
+```bash
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Or specify your local IP address directly:
+
+```bash
+php artisan serve --host=192.168.1.100 --port=8000
+```
+
+Replace `192.168.1.100` with your actual local IP address.
+
+### Access from Other Devices
+
+Once the server is running, you can access the API from any device on the same WiFi network using:
+
+-   **API Base URL**: `http://YOUR_LOCAL_IP:8000/api/v1`
+-   **Swagger UI**: `http://YOUR_LOCAL_IP:8000/api/documentation`
+
+**Example:**
+
+```bash
+# From a mobile device or another computer on the same network
+curl -X POST http://192.168.1.100:8000/api/v1/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "demo@demo.app",
+    "password": "password"
+  }'
+```
+
+### Firewall Considerations
+
+You may need to allow incoming connections on port 8000:
+
+**macOS:**
+
+-   System Settings → Network → Firewall → Firewall Options
+-   Add PHP or allow incoming connections on port 8000
+
+**Linux:**
+
+```bash
+sudo ufw allow 8000/tcp
+```
+
+**Windows:**
+
+-   Windows Defender Firewall → Advanced Settings → Inbound Rules
+-   Add a new rule to allow port 8000
+
+### Using Composer Run Dev with Network Access
+
+If you're using `composer run dev`, you may need to modify the script or run the commands separately:
+
+```bash
+# Terminal 1: Start Laravel server on network
+php artisan serve --host=0.0.0.0 --port=8000
+
+# Terminal 2: Start Vite dev server
+npm run dev
+```
+
 ## API Endpoints
 
 All API endpoints are prefixed with `/api/v1`.
