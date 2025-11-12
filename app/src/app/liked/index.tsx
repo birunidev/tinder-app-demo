@@ -4,13 +4,14 @@ import { BottomNav } from "@/components/organisms/BottomNav";
 import { SwiperContainer } from "@/components/organisms/SwiperContainer";
 import { useUser } from "@/providers/user-provider";
 import { People } from "@/types";
-import { Redirect } from "expo-router";
-import React, { useMemo, useRef } from "react";
+import { Redirect, useNavigation } from "expo-router";
+import React, { useLayoutEffect, useMemo, useRef } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SwiperCardRefType } from "rn-swiper-list";
 
 export default function LikedPage() {
+  const navigation = useNavigation();
   const { isUserReady, isLoading } = useUser();
   const swiperRef = useRef<SwiperCardRefType>(null);
   const { data: likedPeopleResponse, isLoading: isLoadingLiked } =
@@ -22,11 +23,16 @@ export default function LikedPage() {
       },
     });
 
-  // Convert GetLikedPeople200DataItem[] to People[] (they have the same structure)
   const likedPeople: People[] = useMemo(
     () => (likedPeopleResponse?.data ?? []) as People[],
     [likedPeopleResponse]
   );
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: "Liked Person",
+    });
+  }, [navigation]);
 
   if (isLoading || isLoadingLiked) {
     return (
